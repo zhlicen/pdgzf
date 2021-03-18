@@ -1,4 +1,4 @@
-module pdgzf
+module github.com/zhlicen/pdgzf
 
 go 1.16
 
