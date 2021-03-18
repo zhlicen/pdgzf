@@ -24,6 +24,8 @@ type House struct {
 
 type Queue struct {
 	Qualification QueueItem `json:"qualification"`
+	Status        string    `json:"status"`
+	Position      int       `json:"position"`
 }
 
 // QueueItem 排队信息
