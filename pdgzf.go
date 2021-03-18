@@ -14,10 +14,12 @@ import (
 
 // House 房源信息
 type House struct {
-	ID       int64   `json:"id"`
-	FullName string  `json:"fullName"`
-	TypeName int     `json:"typeName"`
-	Queue    []Queue `json:"queue"`
+	ID              int64   `json:"id"`
+	FullName        string  `json:"fullName"`
+	TypeName        int     `json:"typeName"`
+	Queue           []Queue `json:"queue"`
+	QueueCount      int     `json:"queueCount"`
+	SelectStartTime string  `json:"selectStartTime"`
 }
 
 type Queue struct {
