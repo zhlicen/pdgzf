@@ -52,7 +52,6 @@ func GetHouses(reqStr string, accessToken string) []*House {
 		return nil
 	}
 	rb, err := io.ReadAll(rsp.Body)
-	fmt.Println(string(rb))
 	if err != nil {
 		log.Println(err)
 		return nil
