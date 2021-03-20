@@ -23,7 +23,8 @@ type House struct {
 }
 
 type Period struct {
-	Name string `json:"name"`
+	Name      string `json:"name"`
+	StartTime string `json:"startTime"`
 }
 
 type Queue struct {
