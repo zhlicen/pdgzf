@@ -22,10 +22,15 @@ type House struct {
 	SelectStartTime string  `json:"selectStartTime"`
 }
 
+type Period struct {
+	Name string `json:"name"`
+}
+
 type Queue struct {
 	Qualification QueueItem `json:"qualification"`
 	Status        string    `json:"status"`
 	Position      int       `json:"position"`
+	Period        Period    `json:"period"`
 }
 
 // QueueItem 排队信息
