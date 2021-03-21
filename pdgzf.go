@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -41,18 +42,44 @@ type QueueItem struct {
 	StartDate string `json:"startDate"`
 }
 
+// Login 登陆验证码不好破...这里直接复制登陆请求(一个漏洞)
+// 抓取一次成功的登陆请求可以无限复用， JSESSIONID有效期待验证,
+// loginReqStr是login的body
+// JSESSIONID从cookie中找
+func Login(loginReqStr, jSessionID string) (cookies []*http.Cookie, err error) {
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://select.pdgzf.com/api/v1.0/app/gzf/user/login"), bytes.NewBuffer([]byte(loginReqStr)))
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	req.Header.Set("Cookie", fmt.Sprintf(`JSESSIONID=%s`, jSessionID))
+	req.Header.Set("Content-Type", "application/json")
+	cli := http.Client{}
+	rsp, err := cli.Do(req)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return rsp.Cookies(), nil
+}
+
 // GetHouses 根据请求查询房源列表
 // reqStr https://select.pdgzf.com/houseLists 页面定制查询条件，复制POST参数JSON字符串
-// asscessToken 登陆请求回复中获得，不填无法获取到 Qualification
-func GetHouses(reqStr string, accessToken string) []*House {
+// cookies 从Login中拿，也可以自己从header中取GZFAuthentication（有效期24h），存入http.Cookie结构中
+// 如果无需排队数据，cookies参数填空即可
+func GetHouses(reqStr string, cookies []*http.Cookie) []*House {
 	houses := []*House{}
 	req, err := http.NewRequest("POST", fmt.Sprintf("https://select.pdgzf.com/api/v1.0/app/gzf/house/list"), bytes.NewBuffer([]byte(reqStr)))
 	if err != nil {
 		log.Println(err)
 		return houses
 	}
-	if accessToken != "" {
-		req.Header.Set("gzfauthentication", accessToken)
+	for _, cookie := range cookies {
+		if cookie.Name == "GZFAuthentication" {
+			v, _ := url.QueryUnescape(cookie.Value)
+			req.Header.Set("GZFAuthentication", v)
+		}
 	}
 	req.Header.Set("Content-Type", "application/json")
 	cli := http.Client{}
@@ -92,15 +119,22 @@ func GetHouses(reqStr string, accessToken string) []*House {
 
 // GetQueue 获取房源排队队列
 // houseID 房源ID
-// asscessToken 登陆请求回复中获得
-func GetQueue(houseID int, accessToken string) []*QueueItem {
+// cookies 从Login中拿，也可以自己从header中取GZFAuthentication（有效期24h）
+// 如果无需排队数据，cookies参数填空即可
+func GetQueue(houseID int, cookies []*http.Cookie) []*QueueItem {
 	queue := []*QueueItem{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://select.pdgzf.com/api/v1.0/app/gzf/house/%d", houseID), nil)
 	if err != nil {
 		log.Println(err)
 		return queue
 	}
-	req.Header.Set("gzfauthentication", accessToken)
+	for _, cookie := range cookies {
+		if cookie.Name == "GZFAuthentication" {
+			v, _ := url.QueryUnescape(cookie.Value)
+			req.Header.Set("GZFAuthentication", v)
+		}
+		//req.AddCookie(cookie)
+	}
 	cli := http.Client{}
 	rsp, err := cli.Do(req)
 	rb, err := io.ReadAll(rsp.Body)
