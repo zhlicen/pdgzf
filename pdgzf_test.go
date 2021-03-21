@@ -38,3 +38,8 @@ func TestLogin(t *testing.T) {
 	}
 	fmt.Println(cookies)
 }
+
+func TestGetLoginArgs(t *testing.T) {
+	fmt.Println(GetLoginArgs(`{"account":"xxx","password":"xxxx","captcha":"%s"}`,
+		func(imageBase64 string) (result string, err error) { return "test", nil }))
+}
