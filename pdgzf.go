@@ -50,6 +50,7 @@ type QueueItem struct {
 }
 
 // 验证码识别方法...目前没有好的方法，可以自行训练，或者网上有部分识别API尚可
+// 推荐使用[ttshitu](http://www.ttshitu.com/)，便宜好用
 type CaptchaRecognize func(imageBase64 string) (result string, err error)
 
 // 生成登陆参数
